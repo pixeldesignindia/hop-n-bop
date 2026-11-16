@@ -9800,3 +9800,47 @@ a.hnb-albums__tab {
         padding-bottom: 20px;
     }
 }
+
+/* ---------- Homepage, about-more on phones: every line centred, including the tagline ---------- */
+
+@media (max-width: 640px) {
+    .hnb-about__content,
+    .hnb-about__heading {
+        align-items: center;
+        text-align: center;
+    }
+
+    /* The tagline's second line is indented with spaces on desktop: collapse them so both lines centre */
+    .hnb-about__tagline-text {
+        white-space: normal;
+        text-align: center;
+    }
+}
+
+/* ---------- Homepage, our activities on phones: the heading stays at 36px, even on narrow phones ---------- */
+
+/* Scoped to the homepage section: the contact heading on every page shares .hnb-activities__title */
+@media (max-width: 640px) {
+    .hnb-activities .hnb-activities__title {
+        font-size: 36px;
+        line-height: 44px;
+    }
+}
+
+/* ---------- Homepage, about-more photo on phones: centred above the copy ---------- */
+
+/* On desktop the 657px photo sits 43px left of its 670px frame, beside the copy. Stacked on a phone that reads
+   as off-centre, so the photo, its glow and its sparks all move 49.5 design px right: photo at (670 - 657) / 2 */
+@media (max-width: 640px) {
+    .hnb-about__photo {
+        left: calc(6.5 * var(--u));
+    }
+
+    .hnb-about__glow {
+        left: calc(-69.5 * var(--u));
+    }
+
+    .hnb-about__image-sparks {
+        left: calc(176.15 * var(--u));
+    }
+}
