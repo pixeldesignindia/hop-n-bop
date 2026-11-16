@@ -9844,3 +9844,24 @@ a.hnb-albums__tab {
         left: calc(176.15 * var(--u));
     }
 }
+
+/* ---------- Homepage, Playschool and Membership photos on phones: centred above the copy ---------- */
+
+/* --ox moves each photo with its backdrop and sparks. These values put the photo's middle on the frame's middle:
+   Playschool's 700-wide photo starts at -60 (-60 + 45 + 350 = 335), Membership's 669.85-wide picture at -69.16 */
+@media (max-width: 640px) {
+    .hnb-playschool__visual {
+        --ox: 45;
+    }
+
+    .hnb-membership__visual {
+        --ox: 69.2;
+    }
+}
+
+/* Events photo on phones: centred too. Its 654.84-wide photo starts at 27.27 (27.27 - 19.69 + 327.42 = 335) */
+@media (max-width: 640px) {
+    .hnb-events__visual {
+        --ox: -19.69;
+    }
+}
