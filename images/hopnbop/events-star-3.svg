@@ -1,0 +1,17 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="43" height="42.9509" viewBox="0 0 43 42.9509" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="star-18 3" filter="url(#filter0_f_0_18)">
+<g clip-path="url(#clip0_0_18)">
+<path id="Vector" d="M37.1243 16.7776L26.9796 15.2279L22.4325 5.54244C22.0928 4.81919 20.9062 4.81919 20.5666 5.54244L16.0208 15.2279L5.87608 16.7776C5.04283 16.9054 4.71008 17.9188 5.29446 18.5169L12.6645 26.0712L10.9223 36.7508C10.7835 37.5992 11.6896 38.2358 12.439 37.8192L21.5002 32.8114L30.5615 37.8206C31.304 38.2331 32.2183 37.6088 32.0781 36.7522L30.336 26.0726L37.706 18.5183C38.2903 17.9188 37.9562 16.9054 37.1243 16.7776Z" fill="#FFD09E"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_f_0_18" x="0" y="-0.025321" width="43" height="43" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="2.5" result="effect1_foregroundBlur_0_18"/>
+</filter>
+<clipPath id="clip0_0_18">
+<rect width="33" height="33" fill="white" transform="translate(5 4.97468)"/>
+</clipPath>
+</defs>
+</svg>

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en" class="hnb-no-js">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>Contact — Hop N Bop</title>
+
+        <script>document.documentElement.classList.replace('hnb-no-js', 'hnb-js');</script>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Molle:ital@1&family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+        <link rel="stylesheet" href="https://pixeldesignindia.github.io/hop-n-bop/css/hopnbop.css?v=1794847423">
+
+            <script id="browser-logger-active">
+(function() {
+    const ENDPOINT = 'https://pixeldesignindia.github.io/hop-n-bop/_boost/browser-logs';
+    const logQueue = [];
+    let flushTimeout = null;
+    const captureTypes = ["error","warning","info","log","debug","table"];
+
+    console.log('🔍 Browser logger active (MCP server detected). Posting to: ' + ENDPOINT);
+
+    // Store original console methods
+    const originalConsole = {
+        log: console.log,
+        debug: console.debug,
+        info: console.info,
+        error: console.error,
+        warn: console.warn,
+        table: console.table
+    };
+
+    // Walk own enumerable keys so JSON.stringify cannot auto-invoke a proxy fake toJSON (e.g. Livewire's `$wire`) and fire a real request.
+    function toSafeValue(value, seen) {
+        if (value === null || typeof value !== 'object') {
+            return value;
+        }
+        if (value instanceof Error) {
+            return { name: value.name, message: value.message, stack: value.stack };
+        }
+        // Date has no own enumerable keys, so the walk below would collapse it to {}.
+        if (value instanceof Date) {
+            return value.toISOString();
+        }
+        if (seen.has(value)) {
+            return '[Circular]';
+        }
+        seen.add(value);
+        if (Array.isArray(value)) {
+            return value.map((item) => toSafeValue(item, seen));
+        }
+        const plain = {};
+        for (const key of Object.keys(value)) {
+            if (key === 'toJSON') continue;
+            try {
+                plain[key] = toSafeValue(value[key], seen);
+            } catch (e) {
+                plain[key] = '[Unreadable]';
+            }
+        }
+        return plain;
+    }
+
+    // Helper to safely stringify values
+    function safeStringify(obj) {
+        return JSON.stringify(toSafeValue(obj, new WeakSet()));
+    }
+
+    // Normalize log type for consistency (e.g., 'warn' to 'warning')
+    function normalizeType(type) {
+        return type === 'warn' ? 'warning' : type;
+    }
+
+    // Determine if a log type should be captured based on configured levels
+    function shouldCapture(type) {
+        return captureTypes.includes(normalizeType(type));
+    }
+
+    // Batch and send logs
+    function flushLogs() {
+        if (logQueue.length === 0) return;
+
+        const batch = logQueue.splice(0, logQueue.length);
+
+        fetch(ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ logs: batch })
+        }).catch(err => {
+            // Silently fail to avoid infinite loops
+            originalConsole.error('Failed to send logs:', err);
+        });
+    }
+
+    // Debounced flush (100ms)
+    function scheduleFlush() {
+        if (flushTimeout) clearTimeout(flushTimeout);
+        flushTimeout = setTimeout(flushLogs, 100);
+    }
+
+    // Intercept console methods
+    ['log', 'debug', 'info', 'error', 'warn', 'table'].forEach(method => {
+        console[method] = function(...args) {
+            // Call original method
+            originalConsole[method].apply(console, args);
+
+            // Capture log data
+            try {
+                if (!shouldCapture(method)) {
+                    return;
+                }
+
+                logQueue.push({
+                    type: method,
+                    timestamp: new Date().toISOString(),
+                    data: args.map(arg => {
+                        try {
+                            return typeof arg === 'object' ? JSON.parse(safeStringify(arg)) : arg;
+                        } catch (e) {
+                            return String(arg);
+                        }
+                    }),
+                    url: window.location.href,
+                    userAgent: navigator.userAgent
+                });
+
+                scheduleFlush();
+            } catch (e) {
+                // Fail silently
+            }
+        };
+    });
+
+    // Global error handlers for uncaught errors
+    const originalOnError = window.onerror;
+    window.onerror = function boostErrorHandler(errorMsg, url, lineNumber, colNumber, error) {
+        try {
+            if (shouldCapture('error')) {
+                logQueue.push({
+                    type: 'uncaught_error',
+                    timestamp: new Date().toISOString(),
+                    data: [{
+                        message: errorMsg,
+                        filename: url,
+                        lineno: lineNumber,
+                        colno: colNumber,
+                        error: error ? {
+                            name: error.name,
+                            message: error.message,
+                            stack: error.stack
+                        } : null
+                    }],
+                    url: window.location.href,
+                    userAgent: navigator.userAgent
+                });
+
+                scheduleFlush();
+            }
+
+        } catch (e) {
+            // Fail silently
+        }
+
+        // Call original handler if it exists
+        if (originalOnError && typeof originalOnError === 'function') {
+            return originalOnError(errorMsg, url, lineNumber, colNumber, error);
+        }
+
+        // Let the error continue to propagate
+        return false;
+    }
+    window.addEventListener('error', (event) => {
+        try {
+            if (!shouldCapture('error')) {
+                return false;
+            }
+
+            logQueue.push({
+                type: 'window_error',
+                timestamp: new Date().toISOString(),
+                data: [{
+                    message: event.message,
+                    filename: event.filename,
+                    lineno: event.lineno,
+                    colno: event.colno,
+                    error: event.error ? {
+                        name: event.error.name,
+                        message: event.error.message,
+                        stack: event.error.stack
+                    } : null
+                }],
+                url: window.location.href,
+                userAgent: navigator.userAgent
+            });
+
+            scheduleFlush();
+        } catch (e) {
+            // Fail silently
+        }
+
+        // Let the error continue to propagate
+        return false;
+    });
+    window.addEventListener('unhandledrejection', (event) => {
+        try {
+            if (!shouldCapture('error')) {
+                return false;
+            }
+
+            logQueue.push({
+                type: 'error',
+                timestamp: new Date().toISOString(),
+                data: [{
+                    message: 'Unhandled Promise Rejection',
+                    reason: toSafeValue(event.reason, new WeakSet())
+                }],
+                url: window.location.href,
+                userAgent: navigator.userAgent
+            });
+
+            scheduleFlush();
+        } catch (e) {
+            // Fail silently
+        }
+
+        // Let the rejection continue to propagate
+        return false;
+    });
+
+    // Flush on page unload
+    window.addEventListener('beforeunload', () => {
+        if (logQueue.length > 0) {
+            navigator.sendBeacon(ENDPOINT, JSON.stringify({ logs: logQueue }));
+        }
+    });
+})();
+</script>
+</head>
+    <body>
+        <header class="hnb-header">
+    <div class="hnb-header__wrapper">
+        <a class="hnb-logo" href="https://pixeldesignindia.github.io/hop-n-bop">
+            <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/logo.png" alt="Hop N Bop" width="160" height="42">
+        </a>
+
+        <nav aria-label="Primary">
+            <ul class="hnb-menu" id="hnb-menu">
+                                    <li><a class="hnb-menu__link" href="https://pixeldesignindia.github.io/hop-n-bop" >Home</a></li>
+                                    <li><a class="hnb-menu__link" href="https://pixeldesignindia.github.io/hop-n-bop/about-us" >About</a></li>
+                                    <li><a class="hnb-menu__link" href="https://pixeldesignindia.github.io/hop-n-bop/play-explore" >Play &amp; Explore</a></li>
+                                    <li><a class="hnb-menu__link" href="https://pixeldesignindia.github.io/hop-n-bop/birthdays" >Birthdays</a></li>
+                                    <li><a class="hnb-menu__link" href="https://pixeldesignindia.github.io/hop-n-bop/memberships" >Memberships</a></li>
+                                    <li><a class="hnb-menu__link" href="https://pixeldesignindia.github.io/hop-n-bop/playschool" >Playschool</a></li>
+                            </ul>
+        </nav>
+
+        <div class="hnb-header__right">
+            <a class="hnb-btn" href="https://pixeldesignindia.github.io/hop-n-bop/contact">Contact</a>
+            <button class="hnb-more" type="button" aria-label="Menu" aria-controls="hnb-drawer" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </div>
+</header>
+
+        <main>
+                
+    <section class="hnb-banner hnb-banner--inner hnb-banner--centred hnb-banner--contact">
+        <div class="hnb-banner__inner-photo" aria-hidden="true">
+            <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-banner-photo.jpg" alt="" fetchpriority="high">
+        </div>
+        <img class="hnb-banner__glow" src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/cafe-banner-glow.svg" alt="" aria-hidden="true">
+        <div class="hnb-banner__overlay"></div>
+
+        <div class="hnb-caption">
+            <h1 class="hnb-title">
+                <img class="hnb-title__rays" src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/cafe-banner-rays.svg" alt="" aria-hidden="true">
+                <span class="hnb-title__line">Contact Us<img class="hnb-title__burst" src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/cafe-banner-sparks.svg" alt="" aria-hidden="true"></span>
+            </h1>
+            <p class="hnb-caption__text">Have a question or planning a visit?<br> Get in touch with Hop N Bop let’s make every moment more playful!</p>
+        </div>
+
+        <img class="hnb-banner__clouds" src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/about-banner-clouds.svg" alt="" aria-hidden="true">
+    </section>
+
+    
+        </main>
+
+        <section class="hnb-contact" id="contact">
+    <div class="hnb-contact__bg" aria-hidden="true">
+        <span class="hnb-contact__bg-mask">
+            <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-bg.png" alt="" loading="lazy">
+        </span>
+    </div>
+
+    <span class="hnb-contact__deco hnb-contact__deco--star-1" aria-hidden="true">
+        <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-star-1.svg" alt="">
+    </span>
+    <span class="hnb-contact__deco hnb-contact__deco--star-2" aria-hidden="true">
+        <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-star-2.svg" alt="">
+    </span>
+
+    <div class="hnb-contact__inner">
+        <span class="hnb-badge" data-reveal>
+            <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-badge-star.svg" alt="" aria-hidden="true">
+            Contact
+        </span>
+
+        <div class="hnb-contact__heading" data-reveal>
+            <h2 class="hnb-activities__title hnb-contact__title">
+                <img class="hnb-contact__title-sparks" src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-heading-sparks.svg" alt="" aria-hidden="true">
+                Let’s Plan Some <span class="hnb-activities__title-accent">Happy Moments!</span>
+            </h2>
+            <p class="hnb-contact__text">
+                Have a question about playtime, memberships or celebrations?<br>
+                Get in touch with the <strong>Hop N Bop</strong> team.
+            </p>
+        </div>
+
+        <span class="hnb-contact__deco hnb-contact__deco--path" aria-hidden="true">
+            <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-dashed-path.svg" alt="">
+        </span>
+
+        <div class="hnb-contact__row">
+            <div class="hnb-contact__address" data-reveal="left">
+                <h3 class="hnb-contact__label">
+                    Contact
+                    <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-title-line.svg" alt="" aria-hidden="true">
+                </h3>
+
+                <ul class="hnb-contact__card">
+                    <li class="hnb-contact__item hnb-contact__item--top">
+                        <span class="hnb-contact__icon hnb-contact__icon--location" aria-hidden="true">
+                            <span>
+                                <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-icon-location-pin.svg" alt="">
+                                <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-icon-location-base.svg" alt="">
+                            </span>
+                        </span>
+                        <p class="hnb-contact__lines">
+                            <strong>Hop n Bop,</strong><br>
+                            444 The Corporate Lounge, 2nd Floor, Plot no. 347,<br>
+                            CTS No. E/444, Linking Road, Opp, Khatwari Darbar, Khar (W), Mumbai 400052
+                        </p>
+                    </li>
+                    <li class="hnb-contact__item">
+                        <span class="hnb-contact__icon hnb-contact__icon--phone" aria-hidden="true">
+                            <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-icon-phone.svg" alt="">
+                        </span>
+                        <a class="hnb-contact__link" href="tel:+917021197317">+91 7021197317</a>
+                    </li>
+                    <li class="hnb-contact__item">
+                        <span class="hnb-contact__icon hnb-contact__icon--mail" aria-hidden="true">
+                            <span>
+                                <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-icon-mail.svg" alt="">
+                            </span>
+                        </span>
+                        <a class="hnb-contact__link hnb-contact__link--mail" href="mailto:info@hopnbop.in">info@hopnbop.in</a>
+                    </li>
+                </ul>
+            </div>
+
+            <form class="hnb-form" id="hnb-contact-form" novalidate data-reveal="right">
+                <h3 class="hnb-form__title">
+                    Join Us
+                    <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-title-line.svg" alt="" aria-hidden="true">
+                </h3>
+
+                <div class="hnb-form__fields">
+                    <label class="hnb-field hnb-field--select">
+                        <span class="hnb-field__icon hnb-field__icon--school" aria-hidden="true">
+                            <span>
+                                <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-form-school-1.svg" alt="">
+                                <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-form-school-2.svg" alt="">
+                                <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-form-school-3.svg" alt="">
+                            </span>
+                        </span>
+                        <select class="hnb-field__control" name="interest" aria-label="Select what you are interested in">
+                            <option value="" selected disabled>Select</option>
+                            <option>Play &amp; Explore</option>
+                            <option>Birthdays</option>
+                            <option>Events</option>
+                            <option>Memberships</option>
+                            <option>Playschool</option>
+                        </select>
+                    </label>
+                    <label class="hnb-field">
+                        <span class="hnb-field__icon" aria-hidden="true">
+                            <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-form-user.svg" alt="">
+                        </span>
+                        <input class="hnb-field__control" type="text" name="name" placeholder="Enter Your Name" aria-label="Your name" autocomplete="name">
+                    </label>
+                    <label class="hnb-field">
+                        <span class="hnb-field__icon hnb-field__icon--phone" aria-hidden="true">
+                            <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-form-phone.svg" alt="">
+                        </span>
+                        <input class="hnb-field__control" type="tel" name="phone" placeholder="Phone Number*" aria-label="Phone number" autocomplete="tel" required>
+                    </label>
+                    <label class="hnb-field">
+                        <span class="hnb-field__icon" aria-hidden="true">
+                            <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-form-email.svg" alt="">
+                        </span>
+                        <input class="hnb-field__control" type="email" name="email" placeholder="Email ID" aria-label="Email" autocomplete="email">
+                    </label>
+                    <label class="hnb-field hnb-field--message">
+                        <span class="hnb-field__icon hnb-field__icon--message" aria-hidden="true">
+                            <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-form-message.svg" alt="">
+                        </span>
+                        <textarea class="hnb-field__control" name="message" placeholder="Message" aria-label="Message"></textarea>
+                    </label>
+                </div>
+
+                <div class="hnb-form__actions">
+                    <button class="hnb-cta hnb-cta--orange hnb-cta--frogie hnb-cta--block" type="submit">
+                        Submit
+                        <img class="hnb-cta__arrow" src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/playschool-cta-arrow.svg" alt="" aria-hidden="true">
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+        <footer class="hnb-footer">
+    <div class="hnb-footer__main">
+        <div class="hnb-footer__col hnb-footer__col--about">
+            <a class="hnb-logo" href="https://pixeldesignindia.github.io/hop-n-bop">
+                <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/logo.png" alt="Hop N Bop" width="160" height="42">
+            </a>
+            <div class="hnb-footer__hours">
+                <p>Come and Have Fun, Any Day of The Week:</p>
+                <p><strong>Mon-Fri: 11.00 AM - 08.00 PM</strong></p>
+                <p><strong>Sat-Sun: 11.00 AM - 08.00 PM</strong></p>
+                <p><strong>Open All 7 Days</strong></p>
+                <p class="hnb-footer__note">Please call on <b>7021197317</b> before visiting to avoid inconvenience.</p>
+                <p>Socks are compulsory for all the kids and adults.</p>
+            </div>
+        </div>
+
+        <nav class="hnb-footer__col hnb-footer__col--links" aria-label="Information">
+            <h3 class="hnb-footer__title">Information</h3>
+            <ul class="hnb-footer__list">
+                <li><a href="https://pixeldesignindia.github.io/hop-n-bop">Home</a></li>
+                <li><a href="https://pixeldesignindia.github.io/hop-n-bop/about-us">About Us</a></li>
+                <li><a href="https://pixeldesignindia.github.io/hop-n-bop/events">Events</a></li>
+                <li><a href="https://pixeldesignindia.github.io/hop-n-bop/memberships">Memberships</a></li>
+                <li><a href="https://pixeldesignindia.github.io/hop-n-bop/locations">Locations</a></li>
+                <li><a href="https://pixeldesignindia.github.io/hop-n-bop/contact">Contact</a></li>
+            </ul>
+        </nav>
+
+        <nav class="hnb-footer__col hnb-footer__col--links" aria-label="Quick links">
+            <h3 class="hnb-footer__title">Quick Links</h3>
+            <ul class="hnb-footer__list">
+                <li><a href="https://pixeldesignindia.github.io/hop-n-bop/play-explore">Play &amp; Explore</a></li>
+                <li><a href="https://pixeldesignindia.github.io/hop-n-bop/birthdays">Birthdays</a></li>
+                <li><a href="https://pixeldesignindia.github.io/hop-n-bop/playschool">Playschool</a></li>
+                <li><a href="https://pixeldesignindia.github.io/hop-n-bop/daycare">Daycare</a></li>
+                <li><a href="https://pixeldesignindia.github.io/hop-n-bop/playspaces">Playspaces</a></li>
+                <li><a href="https://pixeldesignindia.github.io/hop-n-bop/cafe">Café</a></li>
+            </ul>
+        </nav>
+
+        <div class="hnb-footer__col hnb-footer__col--contact">
+            <h3 class="hnb-footer__title">Quick Contact</h3>
+            <ul class="hnb-footer__contact">
+                <li>
+                    <span class="hnb-footer__icon hnb-footer__icon--mail" aria-hidden="true">
+                        <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/footer-icon-mail.svg" alt="">
+                    </span>
+                    <a href="mailto:info@hopnbop.in">info@hopnbop.in</a>
+                </li>
+                <li>
+                    <span class="hnb-footer__icon hnb-footer__icon--phone" aria-hidden="true">
+                        <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/footer-icon-phone.svg" alt="">
+                    </span>
+                    <a href="tel:+917021197317">+91 7021197317</a>
+                </li>
+            </ul>
+            <h3 class="hnb-footer__title">Follow Us</h3>
+            <ul class="hnb-footer__social">
+                <li><a href="#" aria-label="Facebook"><img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/footer-social-facebook.svg" alt=""></a></li>
+                <li><a href="#" aria-label="Instagram"><img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/footer-social-instagram.svg" alt=""></a></li>
+                <li><a href="#" aria-label="LinkedIn"><img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/footer-social-linkedin.svg" alt=""></a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="hnb-footer__bottom">
+        <p class="hnb-footer__copy">© 2024. <strong>Hop N Bop</strong>. All Right Reserved.</p>
+        <p class="hnb-footer__credit">Design &amp; Developed By - Crystal Logic Pvt. Ltd.</p>
+    </div>
+</footer>
+        <div class="hnb-drawer" id="hnb-drawer" inert>
+    <div class="hnb-drawer__backdrop" data-drawer-close></div>
+
+    <aside class="hnb-drawer__panel" role="dialog" aria-modal="true" aria-label="Menu">
+        <div class="hnb-drawer__top">
+            <a class="hnb-logo hnb-drawer__link" href="https://pixeldesignindia.github.io/hop-n-bop">
+                <img src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/logo.png" alt="Hop N Bop" width="160" height="42">
+            </a>
+            <button class="hnb-drawer__close" type="button" aria-label="Close menu" data-drawer-close>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+
+        <nav class="hnb-drawer__nav" aria-label="More">
+            <ul class="hnb-drawer__list hnb-drawer__list--primary">
+                                    <li><a class="hnb-drawer__link" href="https://pixeldesignindia.github.io/hop-n-bop" >Home</a></li>
+                                    <li><a class="hnb-drawer__link" href="https://pixeldesignindia.github.io/hop-n-bop/about-us" >About</a></li>
+                                    <li><a class="hnb-drawer__link" href="https://pixeldesignindia.github.io/hop-n-bop/play-explore" >Play &amp; Explore</a></li>
+                                    <li><a class="hnb-drawer__link" href="https://pixeldesignindia.github.io/hop-n-bop/birthdays" >Birthdays</a></li>
+                                    <li><a class="hnb-drawer__link" href="https://pixeldesignindia.github.io/hop-n-bop/memberships" >Memberships</a></li>
+                                    <li><a class="hnb-drawer__link" href="https://pixeldesignindia.github.io/hop-n-bop/playschool" >Playschool</a></li>
+                            </ul>
+            <ul class="hnb-drawer__list">
+                                    <li><a class="hnb-drawer__link" href="https://pixeldesignindia.github.io/hop-n-bop/daycare" >Daycare</a></li>
+                                    <li><a class="hnb-drawer__link" href="https://pixeldesignindia.github.io/hop-n-bop/events" >Events</a></li>
+                                    <li><a class="hnb-drawer__link" href="https://pixeldesignindia.github.io/hop-n-bop/gallery" >Gallery</a></li>
+                                    <li><a class="hnb-drawer__link" href="https://pixeldesignindia.github.io/hop-n-bop/playspaces" >Playspaces</a></li>
+                                    <li><a class="hnb-drawer__link" href="https://pixeldesignindia.github.io/hop-n-bop/cafe" >Cafe</a></li>
+                                    <li><a class="hnb-drawer__link" href="https://pixeldesignindia.github.io/hop-n-bop/locations" >Locations</a></li>
+                            </ul>
+        </nav>
+
+        <img class="hnb-drawer__deco hnb-drawer__deco--star-1" src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-star-1.svg" alt="" aria-hidden="true">
+        <img class="hnb-drawer__deco hnb-drawer__deco--star-2" src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/contact-star-2.svg" alt="" aria-hidden="true">
+        <img class="hnb-drawer__deco hnb-drawer__deco--balloons" src="https://pixeldesignindia.github.io/hop-n-bop/images/hopnbop/about-balloons.svg" alt="" aria-hidden="true">
+    </aside>
+</div>
+
+        <script>
+            (function () {
+                var toggle = document.querySelector('.hnb-more');
+                var drawer = document.getElementById('hnb-drawer');
+                var drawerClose = drawer.querySelector('.hnb-drawer__close');
+
+                function setOpen(open) {
+                    drawer.classList.toggle('is-open', open);
+                    drawer.inert = !open;
+                    document.documentElement.classList.toggle('hnb-drawer-open', open);
+                    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    (open ? drawerClose : toggle).focus({ preventScroll: true });
+                }
+
+                toggle.addEventListener('click', function () {
+                    setOpen(true);
+                });
+
+                /* The close button, the dimmed page behind the panel and every menu link close it */
+                drawer.addEventListener('click', function (event) {
+                    if (event.target.closest('[data-drawer-close], .hnb-drawer__link')) {
+                        setOpen(false);
+                    }
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape' && drawer.classList.contains('is-open')) {
+                        setOpen(false);
+                    }
+                });
+
+                var header = document.querySelector('.hnb-header');
+
+                function markStuck() {
+                    header.classList.toggle('is-stuck', window.scrollY > 10);
+                }
+
+                window.addEventListener('scroll', markStuck, { passive: true });
+                markStuck();
+
+                /* The enquiry form has no endpoint yet: keep it from reloading the page */
+                document.getElementById('hnb-contact-form').addEventListener('submit', function (event) {
+                    event.preventDefault();
+                });
+
+                var revealTargets = document.querySelectorAll('[data-reveal]');
+
+                if (!('IntersectionObserver' in window)) {
+                    revealTargets.forEach(function (el) {
+                        el.classList.add('is-visible');
+                    });
+                    return;
+                }
+
+                var revealObserver = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            var target = entry.target;
+
+                            revealObserver.unobserve(target);
+                            setTimeout(function () {
+                                target.classList.add('is-visible');
+                            }, Number(target.dataset.revealDelay || 0));
+                        }
+                    });
+                }, { rootMargin: '0px 0px -40px 0px', threshold: 0.1 });
+
+                revealTargets.forEach(function (el) {
+                    revealObserver.observe(el);
+                });
+            })();
+        </script>
+
+            </body>
+</html>

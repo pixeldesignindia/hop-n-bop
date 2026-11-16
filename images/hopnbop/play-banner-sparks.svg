@@ -1,0 +1,24 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="43.9999" height="40.6119" viewBox="0 0 43.9999 40.6119" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="Frame 236">
+<g id="Ellipse 5">
+<use xlink:href="#stroke0_0_5" fill="url(#paint0_linear_0_5)"/>
+<use xlink:href="#stroke0_0_5" fill="#FFD839"/>
+</g>
+<g id="Ellipse 6">
+<use xlink:href="#stroke1_0_5" fill="url(#paint1_linear_0_5)"/>
+<use xlink:href="#stroke1_0_5" fill="#FFD839"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_0_5" x1="20.0378" y1="2.84927" x2="4.51553" y2="27.449" gradientUnits="userSpaceOnUse">
+<stop offset="0.322115" stop-color="#F5DC78"/>
+<stop offset="1" stop-color="#EAAD12"/>
+</linearGradient>
+<linearGradient id="paint1_linear_0_5" x1="43.7809" y1="32.3264" x2="10.928" y2="33.3123" gradientUnits="userSpaceOnUse">
+<stop offset="0.322115" stop-color="#F5DC78"/>
+<stop offset="1" stop-color="#EAAD12"/>
+</linearGradient>
+<path id="stroke0_0_5" d="M19.1105 14.3244C15.5478 19.9706 6.28248 28.5639 4.71186 27.5728C3.14124 26.5818 6.51671 14.272 10.0794 8.62587C13.6421 2.97972 17.1981 1.05746 20.2341 2.97316C23.2701 4.88885 22.6731 8.67827 19.1105 14.3244Z"/>
+<path id="stroke1_0_5" d="M32.4801 39.9718C24.9396 40.1981 11.0137 36.1687 10.9375 33.6297C10.8613 31.0907 24.5015 25.5987 32.042 25.3725C39.5824 25.1462 43.6431 27.7359 43.7904 32.6438C43.9377 37.5517 40.0205 39.7455 32.4801 39.9718Z"/>
+</defs>
+</svg>
